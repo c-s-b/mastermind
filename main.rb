@@ -9,7 +9,8 @@ class Code < Colors
 
   def initialize
     super
-    @code = @color_list.sample(4)
+    @code = []
+    4.times { @code.push(@color_list.sample) }
   end
 end
 
@@ -46,8 +47,11 @@ class GuessList < Colors
 end
 
 class Computer
-  def evaluate_guess (code, guess)
+  def initialize
     @feedback = []
+  end
+
+  def evaluate_guess(code, guess)
     guess.each_with_index do |color, index|
       if code.include?(color)
         if code.index(color) == index
@@ -57,7 +61,6 @@ class Computer
         end
       end
     end
-    puts @feedback
   end
 
   def win_or_lose(player)
