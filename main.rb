@@ -14,7 +14,7 @@ class Code < Colors
 end
 
 class GuessList < Colors
-  attr_reader :guesses
+  attr_reader :guesses, :guess
 
   def initialize
     super
@@ -45,8 +45,40 @@ class GuessList < Colors
   end
 end
 
+class Computer
+  def evaluate_guess (code, guess)
+    @feedback = []
+    guess.each_with_index do |color, index|
+      if code.include?(color)
+        if code.index(color) == index
+          @feedback.push('black peg')
+        else
+          @feedback.push('white peg')
+        end
+      end
+    end
+    puts @feedback
+  end
+
+  def win_or_lose(player)
+    if @feedback.count('black peg') == 4
+      # display_winner
+      return true
+    end
+
+    if player.guesses.length == 12
+      # display_loser
+      return true
+    end
+
+    false
+  end
+end
+
 c = Code.new
-p c.code
 g = GuessList.new
+pc = Computer.new
 g.prompt_guess
-p g.guesses
+pc.evaluate_guess(c.code, g.guess)
+p c.code
+p pc.win_or_lose(g)
