@@ -1,26 +1,56 @@
-class Colors
-  def initialize
-    @color_list = %w[blue purple green yellow orange red]
+module Colors
+  attr_reader :code, :color_list
+
+  @@color_list = %w[blue purple green yellow orange red]
+  @@code = []
+
+  def generate_code
+    4.times { @@code.push(@@color_list.sample) }
   end
 end
 
-class Code < Colors
-  attr_reader :code
-
+class Computer
+  include Colors
   def initialize
-    super
-    @code = []
-    4.times { @code.push(@color_list.sample) }
+    @feedback = []
+  end
+
+  def evaluate_guess(guess)
+    guess.each_with_index do |color, index|
+      if @@code.include?(color)
+        if @@code.index(color) == index
+          @feedback.push('black peg')
+        else
+          @feedback.push('white peg')
+        end
+      end
+    end
+    p @feedback
+      p @@code
+  end
+
+  def win_or_lose(player)
+    if @feedback.count('black peg') == 4
+      # display_winner
+      return true
+    end
+
+    if player.guesses.length == 12
+      # display_loser
+      return true
+    end
+
+    false
   end
 end
 
-class GuessList < Colors
-  attr_reader :guesses, :guess
+class Player
+  include Colors
+  attr_reader :guess, :guesses
 
   def initialize
-    super
-    @guesses = []
     @guess = []
+    @guesses = []
   end
 
   def prompt_guess
@@ -42,46 +72,25 @@ class GuessList < Colors
   def check_guess_contents
     return false if @guess.empty?
 
-    @guess.all? { |color| @color_list.include?(color) }
+    @guess.all? { |color| @@color_list.include?(color) }
   end
 end
 
-class Computer
+class Game
   def initialize
-    @feedback = []
+    @computer = Computer.new
+    @player = Player.new
+    @computer.generate_code
   end
 
-  def evaluate_guess(code, guess)
-    guess.each_with_index do |color, index|
-      if code.include?(color)
-        if code.index(color) == index
-          @feedback.push('black peg')
-        else
-          @feedback.push('white peg')
-        end
-      end
+  def run_game
+    until @computer.win_or_lose(@player)
+      @player.prompt_guess
+      @computer.evaluate_guess(@player.guess)
+      @computer.win_or_lose(@player)
     end
-  end
-
-  def win_or_lose(player)
-    if @feedback.count('black peg') == 4
-      # display_winner
-      return true
-    end
-
-    if player.guesses.length == 12
-      # display_loser
-      return true
-    end
-
-    false
   end
 end
 
-c = Code.new
-g = GuessList.new
-pc = Computer.new
-g.prompt_guess
-pc.evaluate_guess(c.code, g.guess)
-p c.code
-p pc.win_or_lose(g)
+game = Game.new
+game.run_game
