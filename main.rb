@@ -1,46 +1,46 @@
 module Colors
-  attr_reader :code, :color_list
+  attr_reader :color_list
 
   @@color_list = %w[blue purple green yellow orange red]
-  @@code = []
-
-  def generate_code
-    4.times { @@code.push(@@color_list.sample) }
-  end
 end
 
 class Computer
+  attr_reader :code, :feedback
+
   include Colors
   def initialize
+    @code = []
     @feedback = []
   end
 
   def evaluate_guess(guess)
+    code_copy = @code.dup
     guess.each_with_index do |color, index|
-      if @@code.include?(color)
-        if @@code.index(color) == index
-          @feedback.push('black peg')
-        else
-          @feedback.push('white peg')
-        end
+      if @code.at(index) == color
+        @feedback.push('black peg')
+        guess[index], code_copy[index] = nil
       end
     end
-    p @feedback
-      p @@code
+    guess.intersection(code_copy).compact.each do |color|
+      [guess.count(color), code_copy.count(color)].min.times { @feedback.push('white peg') }
+    end
   end
 
   def win_or_lose(player)
     if @feedback.count('black peg') == 4
-      # display_winner
+      Game.display_winner
       return true
     end
-
     if player.guesses.length == 12
-      # display_loser
+      Game.display_loser
       return true
     end
-
+    @feedback = []
     false
+  end
+
+  def generate_code
+    4.times { @code.push(@@color_list.sample) }
   end
 end
 
@@ -87,8 +87,17 @@ class Game
     until @computer.win_or_lose(@player)
       @player.prompt_guess
       @computer.evaluate_guess(@player.guess)
+      puts @computer.feedback.to_s
       @computer.win_or_lose(@player)
     end
+  end
+
+  def self.display_winner
+    puts 'you win!'
+  end
+
+  def self.dispay_loser
+    puts 'you lose'
   end
 end
 
